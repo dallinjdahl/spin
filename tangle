@@ -1,0 +1,97 @@
+#!/bin/sh
+# I can't reorder the content of this file, so comments will have to do.
+# This is intended to be a very simple literate-programming tool.
+# It has only been tested on single files, although preliminary
+# provisions to supporting a list of files have been made.  It's
+# currently configured to take troff formatted c source code, and
+# extract all the code out.  The formatting is expected to be done
+# by troff, and is out of scope of this program.
+
+# The main principle of this tool are that you should still write
+# readable code.  You should use the language facilities for abstraction
+# to make everything flow nicely, and you should keep definitions
+# short and self-contained.  This tool is intended to provide a way
+# to explain engineering tradeoffs in the chosen implementation, and
+# as a way to eliminate the ordering imposed by the compiler.  To
+# that effect, we perform a topological sort on all the chunks, with
+# the dependencies manually specified.  This should allow you to
+# explain the program in whatever order seems best, while still making
+# it compilable.
+
+# The expected invocation of this program just takes the literate
+# source file as it's only parameter:
+#    tangle [source.lit]
+awk '
+BEGIN {
+
+# These allow you to adjust the format to your liking.  Note that
+# they are regexes encoded as string literals, hence the doubly escaped
+# periods.  The default format is setup to work well in a troff
+# environment, but any regex will work.  Note that the start line is
+# expected to be followed by a name that it is defining, and the deps
+# line is expected to be followed by the names the current definition
+# depends on.
+
+	start = "\\.CS"
+	end = "\\.CE"
+	deps = "\\.CU"
+
+# lineset is defined to enable resetting line numbers and filenames
+# as in the C preprocessor #line directives.  If this is set to the
+# empty string, this functionality will be disabled.
+
+	lineset = "#line "
+}
+
+# For the C preprocessor, the filename needs to be encoded as a string literal.
+
+1 {file = "\"" FILENAME "\""}
+
+($0 ~ start), ($0 ~ end) {
+	if($0 ~ start) {
+		hd = $2
+		if (lineset != "") {
+			node[hd] = node[hd] "\n" lineset NR file
+		}
+		next
+	}
+
+# The following lines build up the DAG of dependencies.  To enable
+# the topological sort, we count how many predecessors each node has,
+# as well as a list of the successors of each node.
+
+	if ($0 ~ deps) {
+		for(i = 2; i <= NF; i++) {
+			precount[hd]++
+			precount[$i] = precount[$i]
+			graph[$i "-" (++postcount[$i])] = hd
+		}
+		next
+	}
+	if ($0 ~ end) next
+
+	node[hd] = node[hd] "\n" $0
+}
+
+# This is the bulk of the algorithm, and comes from this ACM paper:
+# https://dl.acm.org/doi/pdf/10.1145/3812.315108
+END {
+	qlo = 1
+	for (i in precount) {
+		n++
+		if (precount[i] == 0) {
+			q[++qhi] = i
+		}
+	}
+	while ( qlo <= qhi ) {
+		x = q[qlo++]
+		print node[x]
+		for (i = 1; i <= postcount[x]; i++) {
+			s = graph[x "-" i]
+			if (--precount[s] == 0) {
+				q[++qhi] = s
+			}
+		}
+	}
+	if (qhi != n) exit 1
+} ' "$@"
