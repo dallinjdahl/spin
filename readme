@@ -63,6 +63,18 @@ support bootstrapping and rescue, as well as conserving resources
 and supporting development in various environments.  This tool aims
 to fit in that space.
 
+Comments
+
+People will often use comments for this purpose.  However, comments
+are typically indicated with syntax, and subsequently greyed out
+by the editor, encouraging a programmer to skip over the comments.
+This intends to reverse the direction, with code being set off by
+syntax, thus encouraging people to read the documentation first.
+This turns programming into the more difficult, but arguably more
+important task of explaining programs primarily to a human, rather
+than a computer[4].  The hope is that this will lead to more maintainable,
+educational programs.
+
 Usage
 
 This program is simply invoked with the literate source as its only
@@ -73,3 +85,10 @@ will generate correlation lines with the literate source line and
 filename in the output, according to the C preprocessor format.
 That is also customized in the spin file, or disabled by setting
 correlate to the empty string.
+
+1: https://www-cs-faculty.stanford.edu/~knuth/cweb.html
+2: https://www.cs.tufts.edu/~nr/noweb/
+3: http://unu.retroforth.org/
+4: Abelson and Sussman, Structure and Interpretation of Computer Programs
+https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/full-text/book/book-Z-H-7.html
+("programs must be written for people to read, and only incidentally for machines to execute.")
