@@ -1,0 +1,75 @@
+spin
+
+This is a literate programming tool.  It's much smaller in scope
+and functionality than the web variants[1,2], and a little bigger
+than unu[3].  It's called spin rather than tangle because the
+reordering is done by an algorithm, rather than arbitrarily specified
+chunks, so it's more ordered than tangle.  It's also a smaller word
+than tangle, reflecting its small size and purpose.
+
+Purpose
+
+The purpose of this tool is to allow a program to be reordered as
+the developer sees fit for expository purposes, and to provide an
+easy way to add documentation to that program.  To this end, each
+chunk specifies an identifier and the identifiers it depends on,
+and the program performs a topological sort on the resulting DAG.
+
+Motivation
+
+Writing maintainable programs is one of the biggest issues of
+software engineering.  Writing readable code with unit tests is
+definitely a huge step in the write direction.  However, code and
+unit tests fail to inform the reader why a given piece of code was
+implemented one way at the expense of another.  They also fail to
+inform the reader about possible gotchas and edge-cases when using
+a particular piece of code.  These things are best explained in
+prose format.
+
+In addition, the order of exposition is critical to the readability
+of the code, but the order conducive to reading is usually top-down,
+while the order conducive to compiling is usually bottom up.
+
+Principles
+
+This tool differs significantly from other literate-programming
+tools.  It is not meant to shore up inadequacies in the programming
+language, and doesn't generate documentation at all.
+
+The programmer is expected to utilize structures available in the
+programming language to organize the code, so there is no support
+for macros.  In addition, the programmer is expected to keep chunks
+short to allow for documentation to be interspersed effectively.
+Effective naming should eliminate the need for explaining what code
+does, thereby minimizing misleading comments.
+
+The documentation is intended to explain rationale decisions
+underlying the presented implementation, as well as relationship
+information that may not be explicit in the program.
+
+The program is actually written as documentation, and this tool
+extracts the program.  Any postprocessing of the documentation is
+not covered by this tool, but should be done by the developer.
+These might include defining macros for troff, translating to
+markdown, etc.  These should be relatively painless, depending on
+the extent of the processing.
+
+This is intended to be available on minimal systems, and thus only
+relies on sh and awk.  It should be portable to various versions
+of awk, as I've taken pains to avoid anything I knew to be unportable,
+such as user-defined functions.  There should be an effective set
+of developer tools that is available on very minimal systems to
+support bootstrapping and rescue, as well as conserving resources
+and supporting development in various environments.  This tool aims
+to fit in that space.
+
+Usage
+
+This program is simply invoked with the literate source as its only
+argument.  The spun source will be generated on stdout.  The input
+format can be customized by changing the definitions of the start,
+end, and dependencies variables in the spin file.  By default, spin
+will generate correlation lines with the literate source line and
+filename in the output, according to the C preprocessor format.
+That is also customized in the spin file, or disabled by setting
+correlate to the empty string.
