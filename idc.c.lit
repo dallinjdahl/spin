@@ -1,0 +1,261 @@
+.de CS
+.nf
+.ft M
+.nm 1
+..
+.de CE
+.fi
+.ft R
+..
+.de pp
+.sp .5v
+..
+.de sh
+.sp .2v
+..
+.de hr
+.sp -1v
+\D'l (\\n(.lu/3u) 0'
+.br
+..
+.de hd
+.sh
+.if (\\n*[lsn]<2) .hr
+..
+.blm pp
+.lsm hd
+ idc
+
+idc is a simplified variant of the dc calculator, intended to show
+off the spin literate programming system.  It only operates on
+integers, and is thus mostly a stack-based interactive variant of
+C integer semantics.  It only operates on 32-bit integers.
+
+This program is structured in 2 pieces, a dialect and an application.
+The dialect holds generic data structures and general functions
+that could be provided by a library.  The application consists of
+the main function and other specialized code.
+
+ Dialect
+
+We use stacks to manage the data.  We also use a multibranch loop
+as introduced by Dijkstra in \fIA Discipline of Programming\fP (see
+the do...od construct defined in chapter 4) and championed by Wirth
+in the Oberon version of \fIAlgorithms and Data Structures\fP (see
+appendix C).  We also use the stdio library, and define single-lookahead
+streams on top.  This with a character set functionality is used
+in our numeric input function.  Finally, we have a die function
+that handles error reporting and termination.
+
+
+  Stack
+
+We define the stack as a global struct grouping together the buffer
+and the top pointer.  This allows us to use the struct for namespacing,
+instead of ad hoc name conventions.  The exception is in the
+initialization function, since we can't assign it inline, and we
+only call it once.  We also hard-code the size of the stack, and
+treat overflow and underflow as fatal errors.  This is purely for
+simplicity, in a real application, these would be treated as errors
+to be handled.
+
+
+.CS stack
+.CU die includes
+#define SIZE 128
+struct {
+	uint32_t buffer[SIZE];
+	uint32_t * top;
+} stack = {0};
+
+void stack_init() {
+	stack.top = &(stack.buffer[-1]);
+}
+
+#define Top stack.top[0]
+#define Next stack.top[-1]
+
+void push(uint32_t x) {
+	if(stack.top - stack.buffer > SIZE) die("overflow");
+
+	stack.top++;
+	Top = x;
+}
+
+void drop() {
+	if(stack.top < stack.buffer) die("underflow");
+	
+	stack.top--;
+}
+.CE
+
+  Dloop
+
+The Dijkstra loop provides a clean way to structure conditional
+loops.  This allows you to still use the normal elsif keywords
+within the loop.
+
+.CS dloop
+#define Dloop(condition) while(1) {if(condition)
+#define Dorelse(condition) else if(condition)
+#define Dend else break;}
+.CE
+
+  stdio
+
+We mainly use the stdio library for printf, getchar and EOF, and
+we use exit from stdlib.  We also include stdint here, since we only use int for booleans.
+
+.CS includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+.CE
+
+  Stream Input
+
+This single-lookahead stream also handles end-of-file conditions,
+freeing us from dealing with that throughout the code.  Since we
+only are ever looking at a single stream of data, we simply use a
+global variable to hold the lookahead.  This eases congestion with
+function parameters.
+
+.CS stream
+.CU includes
+char c;
+
+void next() {
+	int x = getchar();
+	if (x == EOF) exit(0);
+	c = x;
+}
+.CE
+
+  Charsets
+
+Rather than using the library provided class facility that depends
+on locale and such, we provide a simpler, more flexible interface
+here.  The idea is that the only ordering allowed is byte ordering,
+and you can provide either explicitly enumerated sets, or a union
+of byte ranges, both encoded as strings.  I've found this to make
+otherwise complicated parsing code quite tractable.
+
+.CS charsets
+int in(char c, char *set) {
+	if(!set) return 0;
+	while(*set) {
+		if(c == *set) return 1;
+		set++;
+	}
+	return 0;
+}
+
+int within(char c, char *rangeset) {
+	if(!rangeset) return 0;
+	while(rangeset[0] && rangeset[1]) {
+		if (rangeset[0] <= c && c <= rangeset[1]) return 1;
+		rangeset += 2;
+	}
+	return 0;
+}
+.CE
+
+  Numeric Input
+
+We only do decimal for illustration purposes, but the implementation
+is easiliy extended.  This also provides insight into how to use
+the ranged charset function within.
+
+.CS num
+.CU charsets includes stream
+uint32_t num() {
+	uint32_t n = 0;
+	while(within(c, "09")) {
+		n *= 10;
+		n += c - '0';
+		next();
+	}
+	return n;
+}
+.CE
+
+  Errors
+
+Having a die function cleans up a lot of code, since we can just
+assume functions worked successfully.  This is only called if you
+have complete control of the code.  For example, when defining a
+library, the client code should be in charge of handling errors,
+so this would be inappropriate from within the library.
+
+.CS die
+.CU includes
+void die(char *s) {
+	fputs(s, stderr);
+	fputc('\n', stderr);
+	exit(1);
+}
+.CE
+
+ Application
+  Main
+
+We are using the Dijkstra loop to ease the control structure.  In
+general I prefer to implicitly thread control through data structures,
+but due to the sparsity of the input, it makes sense to directly
+encode the control.
+
+.CS main
+.CU charsets dloop includes stack operate stream
+int main() {
+	stack_init();
+	next();
+	Dloop(c == 'q') return 0;
+		Dorelse(c == 'p') {
+			printf("%d\n", Top);
+			next();
+		}
+		Dorelse(in(c, " \t\n")) next();
+		Dorelse(within(c, "09")) push(num());
+		Dorelse(1) {
+			operate();
+			drop();
+			next();
+		}
+	Dend
+	return 1;
+}
+.CE
+
+  Operations
+
+Note that each operation is expected to consume one character from
+the input stream, and to modify the second element in the stack.
+The main function drops the top element, and advances the stream.
+
+.CS operate
+.CU stack stream includes
+void operate() {
+	switch(c) {
+	case '+':
+		Next += Top;
+		break;
+	case '-':
+		Next -= Top;
+		break;
+	case '*':
+		Next *= Top;
+		break;
+	case '/':
+		Next /= Top;
+		break;
+	case 's':
+		Next <<= Top;
+		break;
+	case 'S':
+		Next >>= Top;
+		break;
+	default:
+		fputs("?", stderr);
+	}
+}
+.CE
