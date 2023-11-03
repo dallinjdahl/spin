@@ -71,6 +71,7 @@ BEGIN {
 			file = "\"" FILENAME "\""
 			node[subject] = node[subject] "\n" correlate NR file
 		}
+		predecessors[subject] = predecessors[subject]
 		next
 	}
 
@@ -83,7 +84,6 @@ BEGIN {
 			component = $i
 			predecessors[subject]++
 			successors[component]++
-			predecessors[component] = predecessors[component]
 			graph[component "-" successors[component]] = subject
 		}
 		next
@@ -109,7 +109,7 @@ END {
 		qback++
 		print node[subject]
 		for (i = 1; i <= successors[subject]; i++) {
-			successor = graph[x "-" i]
+			successor = graph[subject "-" i]
 			predecessors[successor]--
 			if (predecessors[successor] == 0) {
 				qfront++
