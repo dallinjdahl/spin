@@ -106,7 +106,7 @@ struct {
 } stack = {0};
 
 void stack_init() {
-	stack.top = &(stack.buffer[-1]);
+	stack.top = stack.buffer - 1;
 }
 
 #define Top stack.top[0]

@@ -91,8 +91,11 @@ Example
 An example literate source is provided at idc.c.lit, containing the
 source code for a basic stack-based calculator.  You can run ./sample
 to generate both the pdf and the binary, but the pdf generation
-requires the neatroff toolsuite, along with ghostscript for ps2pdf.
+requires the neatroff[5] toolsuite, along with ghostscript for ps2pdf.
 It should however give you an idea of how to work with the tool.
+
+For those who are unable to get at neatroff but want to see the
+generated documentation, idc.c.pdf is provided in the repo as well.
 
 1: https://www-cs-faculty.stanford.edu/~knuth/cweb.html
 2: https://www.cs.tufts.edu/~nr/noweb/
