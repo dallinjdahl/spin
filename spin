@@ -36,7 +36,7 @@
 
 # The expected invocation of this program just takes the literate
 # source file as it's only parameter:
-#    tangle [source.lit]
+#    spin [source.lit]
 awk '
 BEGIN {
 
