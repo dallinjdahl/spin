@@ -1,0 +1,3 @@
+#!/bin/sh
+eatthis idc.c.lit | neatpost | ps2pdf - idc.c.pdf
+./spin idc.c.lit > idc.c && cc idc.c -o idc

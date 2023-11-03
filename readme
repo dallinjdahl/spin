@@ -86,9 +86,14 @@ filename in the output, according to the C preprocessor format.
 That is also customized in the spin file, or disabled by setting
 correlate to the empty string.
 
+Example
+
+An example literate source is provided at idc.c.lit, containing the source code for a basic stack-based calculator.  You can run ./sample to generate both the pdf and the binary, but the pdf generation requires the neatroff toolsuite, along with ghostscript for ps2pdf.  It should however give you an idea of how to work with the tool.
+
 1: https://www-cs-faculty.stanford.edu/~knuth/cweb.html
 2: https://www.cs.tufts.edu/~nr/noweb/
 3: http://unu.retroforth.org/
 4: Abelson and Sussman, Structure and Interpretation of Computer Programs
 https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/full-text/book/book-Z-H-7.html
 ("programs must be written for people to read, and only incidentally for machines to execute.")
+5: http://litcave.rudi.ir/neatstart.pdf

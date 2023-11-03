@@ -1,17 +1,43 @@
+.ll 4.5i
+.po 1.5i
+.pl 11i
+.de top
+'sp .75i
+..
+.de bot
+'bp
+..
+.wh 0 top
+.wh -1i bot
+.de sz
+.ps \\$1
+.vs (\\$1*4u)/3u
+..
+.de line
+\ 
+.br
+..
 .de CS
 .nf
-.ft M
+.ft CR
 .nm 1
+.blm line
 ..
 .de CE
 .fi
 .ft R
+.nm
+.blm pp
 ..
 .de pp
+.sz 12
 .sp .5v
+.ft R
 ..
 .de sh
-.sp .2v
+.sz 12
+.sp .3v
+.ft B
 ..
 .de hr
 .sp -1v
@@ -20,11 +46,22 @@
 ..
 .de hd
 .sh
-.if (\\n*[lsn]<2) .hr
+.if (\\n[lsn]<2u) \{\
+.bp
+.sz 15
+.hr \}
+..
+.de tl
+.ft B
+.sp 4i
+.sz 20
+.ce \\$1
 ..
 .blm pp
 .lsm hd
- idc
+.tl
+idc
+ Intro
 
 idc is a simplified variant of the dc calculator, intended to show
 off the spin literate programming system.  It only operates on
@@ -76,14 +113,16 @@ void stack_init() {
 #define Next stack.top[-1]
 
 void push(uint32_t x) {
-	if(stack.top - stack.buffer > SIZE) die("overflow");
+	if(stack.top - stack.buffer > SIZE)
+		die("overflow");
 
 	stack.top++;
 	Top = x;
 }
 
 void drop() {
-	if(stack.top < stack.buffer) die("underflow");
+	if(stack.top < stack.buffer)
+		die("underflow");
 	
 	stack.top--;
 }
@@ -104,7 +143,8 @@ within the loop.
   stdio
 
 We mainly use the stdio library for printf, getchar and EOF, and
-we use exit from stdlib.  We also include stdint here, since we only use int for booleans.
+we use exit from stdlib. We also include stdint here, since we
+only use int for booleans.
 
 .CS includes
 #include <stdio.h>
@@ -153,7 +193,9 @@ int in(char c, char *set) {
 int within(char c, char *rangeset) {
 	if(!rangeset) return 0;
 	while(rangeset[0] && rangeset[1]) {
-		if (rangeset[0] <= c && c <= rangeset[1]) return 1;
+		if (rangeset[0] <= c
+				&& c <= rangeset[1])
+			return 1;
 		rangeset += 2;
 	}
 	return 0;
@@ -209,18 +251,21 @@ encode the control.
 int main() {
 	stack_init();
 	next();
-	Dloop(c == 'q') return 0;
-		Dorelse(c == 'p') {
-			printf("%d\n", Top);
-			next();
-		}
-		Dorelse(in(c, " \t\n")) next();
-		Dorelse(within(c, "09")) push(num());
-		Dorelse(1) {
-			operate();
-			drop();
-			next();
-		}
+	Dloop(c == 'q')
+		return 0;
+	Dorelse(c == 'p') {
+		printf("%d\n", Top);
+		next();
+	}
+	Dorelse(in(c, " \t\n"))
+		next();
+	Dorelse(within(c, "09"))
+		push(num());
+	Dorelse(1) {
+		operate();
+		drop();
+		next();
+	}
 	Dend
 	return 1;
 }
