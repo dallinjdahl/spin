@@ -88,7 +88,11 @@ correlate to the empty string.
 
 Example
 
-An example literate source is provided at idc.c.lit, containing the source code for a basic stack-based calculator.  You can run ./sample to generate both the pdf and the binary, but the pdf generation requires the neatroff toolsuite, along with ghostscript for ps2pdf.  It should however give you an idea of how to work with the tool.
+An example literate source is provided at idc.c.lit, containing the
+source code for a basic stack-based calculator.  You can run ./sample
+to generate both the pdf and the binary, but the pdf generation
+requires the neatroff toolsuite, along with ghostscript for ps2pdf.
+It should however give you an idea of how to work with the tool.
 
 1: https://www-cs-faculty.stanford.edu/~knuth/cweb.html
 2: https://www.cs.tufts.edu/~nr/noweb/
